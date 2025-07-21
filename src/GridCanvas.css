@@ -17,8 +17,27 @@
   cursor: pointer;
 }
 
+@keyframes wall-pop {
+  0% {
+    transform: scale(0.5);
+    background: #222;
+    opacity: 0.5;
+  }
+  70% {
+    transform: scale(1.1);
+    background: #61dafb;
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    background: #61dafb;
+    opacity: 1;
+  }
+}
+
 .grid-cell.filled {
   background: #61dafb;
+  animation: wall-pop 0.25s cubic-bezier(0.4, 0.8, 0.2, 1) both;
 }
 
 .grid-cell.start {
