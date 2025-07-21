@@ -1,0 +1,63 @@
+.grid {
+  display: inline-block;
+  margin: 20px auto;
+  user-select: none;
+}
+
+.grid-row {
+  display: flex;
+}
+
+.grid-cell {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #444;
+  background: #222;
+  transition: background 0.1s;
+  cursor: pointer;
+}
+
+.grid-cell.filled {
+  background: #61dafb;
+}
+
+.grid-cell.start {
+  background: #4caf50 !important;
+  border: 1px solid #388e3c;
+}
+
+.grid-cell.end {
+  background: #ff5252 !important;
+  border: 1px solid #b71c1c;
+}
+
+.grid-cell.visited {
+  background: #ffd54f !important;
+}
+
+.grid-cell.current {
+  background: #00bcd4 !important;
+  border: 1px solid #0097a7;
+  z-index: 2;
+}
+
+.grid-cell.path {
+  background: #7e57c2 !important;
+  box-shadow: 0 0 6px 2px #b39ddb;
+}
+
+.clear-btn {
+  margin-top: 20px;
+  padding: 10px 24px;
+  font-size: 1rem;
+  background: #ff5252;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.clear-btn:hover {
+  background: #ff1744;
+} 
