@@ -208,47 +208,48 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
     const { grid, start, end, visited, currentStep, runningAlgo, found, isPlaying, path, selectedAlgorithm, revealedPathIndices } = this.state;
     return (
       <div onMouseUp={this.handleMouseUp}>
-        <div style={{ marginBottom: 16 }}>
-          <label htmlFor="algo-select">Algorithm: </label>
-          <select id="algo-select" value={selectedAlgorithm} onChange={this.handleAlgorithmChange}>
-            <option value="bfs">Breadth First Search</option>
-            <option value="dfs">Depth First Search</option>
-          </select>
-        </div>
-        <div className="grid">
-          {grid.map((row, rowIdx) => (
-            <div className="grid-row" key={rowIdx}>
-              {row.map((cell, colIdx) => {
-                let cellClass = 'grid-cell';
-                if (rowIdx === start[0] && colIdx === start[1]) cellClass += ' start';
-                else if (rowIdx === end[0] && colIdx === end[1]) cellClass += ' end';
-                else if (cell === GridCellType.WALL) cellClass += ' filled';
-                // Animate path reveal
-                else if (
-                  path &&
-                  path.some((p, i) => i < (revealedPathIndices ?? 0) && p[0] === rowIdx && p[1] === colIdx)
-                ) cellClass += ' path';
-                else if (visited && visited[rowIdx][colIdx]) cellClass += ' visited';
-                if (currentStep && rowIdx === currentStep[0] && colIdx === currentStep[1]) cellClass += ' current';
-                return (
-                  <div
-                    key={colIdx}
-                    className={cellClass}
-                    onMouseDown={() => this.handleCellMouseDown(rowIdx, colIdx)}
-                    onMouseEnter={() => this.handleCellMouseEnter(rowIdx, colIdx)}
-                  />
-                );
-              })}
-            </div>
-          ))}
-        </div>
-        <button className="clear-btn" onClick={this.handleClear}>Clear</button>
-        <div style={{ marginTop: 16 }}>
-          <button onClick={this.handleAlgoStart} disabled={runningAlgo || isPlaying}>Start Search</button>
-          <button onClick={this.handleAlgoNext} disabled={!runningAlgo}>Next Step</button>
-          <button onClick={this.handlePlayPause} disabled={!runningAlgo}>{isPlaying ? 'Pause' : 'Play'}</button>
-          <button onClick={this.handleAlgoReset}>Reset Search</button>
-          {found && <span style={{ marginLeft: 12, color: 'green' }}>Path found!</span>}
+        <div className="visualizer-card">
+          <div className="controls-row">
+            <label htmlFor="algo-select" className="algo-label">Algorithm: </label>
+            <select id="algo-select" value={selectedAlgorithm} onChange={this.handleAlgorithmChange} className="algo-select">
+              <option value="bfs">Breadth First Search</option>
+              <option value="dfs">Depth First Search</option>
+            </select>
+            <button className="modern-btn" onClick={this.handleAlgoStart} disabled={runningAlgo || isPlaying}>Start Search</button>
+            <button className="modern-btn" onClick={this.handleAlgoNext} disabled={!runningAlgo}>Next Step</button>
+            <button className="modern-btn" onClick={this.handlePlayPause} disabled={!runningAlgo}>{isPlaying ? 'Pause' : 'Play'}</button>
+            <button className="modern-btn" onClick={this.handleAlgoReset}>Reset Search</button>
+            <button className="clear-btn" onClick={this.handleClear}>Clear</button>
+          </div>
+          <hr className="divider" />
+          <div className="grid">
+            {grid.map((row, rowIdx) => (
+              <div className="grid-row" key={rowIdx}>
+                {row.map((cell, colIdx) => {
+                  let cellClass = 'grid-cell';
+                  if (rowIdx === start[0] && colIdx === start[1]) cellClass += ' start';
+                  else if (rowIdx === end[0] && colIdx === end[1]) cellClass += ' end';
+                  else if (cell === GridCellType.WALL) cellClass += ' filled';
+                  // Animate path reveal
+                  else if (
+                    path &&
+                    path.some((p, i) => i < (revealedPathIndices ?? 0) && p[0] === rowIdx && p[1] === colIdx)
+                  ) cellClass += ' path';
+                  else if (visited && visited[rowIdx][colIdx]) cellClass += ' visited';
+                  if (currentStep && rowIdx === currentStep[0] && colIdx === currentStep[1]) cellClass += ' current';
+                  return (
+                    <div
+                      key={colIdx}
+                      className={cellClass}
+                      onMouseDown={() => this.handleCellMouseDown(rowIdx, colIdx)}
+                      onMouseEnter={() => this.handleCellMouseEnter(rowIdx, colIdx)}
+                    />
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+          {found && <div className="path-found">Path found!</div>}
         </div>
       </div>
     );

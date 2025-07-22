@@ -8,8 +8,8 @@ const NUM_COLS = 30;
 function App() {
   return (
     <div className="App">
-      <h1>Path Finding Visualizer</h1>
-      <GridCanvas numRows={NUM_ROWS} numCols={NUM_COLS} />
+      <h1 className="main-title">Pathfinding Visualizer</h1>
+      <GridCanvas numRows={20} numCols={40} />
     </div>
   );
 }
