@@ -36,7 +36,7 @@
 }
 
 .grid-cell.filled {
-  background: #61dafb;
+  background: #00bcd4;
   animation: wall-pop 0.25s cubic-bezier(0.4, 0.8, 0.2, 1) both;
 }
 
@@ -55,14 +55,33 @@
 }
 
 .grid-cell.current {
-  background: #00bcd4 !important;
-  border: 1px solid #0097a7;
+  background: #9fd400 !important;
+  border: 1px solid #9fd400;
   z-index: 2;
+}
+
+@keyframes path-pop {
+  0% {
+    transform: scale(0.5);
+    background: #222;
+    opacity: 0.5;
+  }
+  70% {
+    transform: scale(1.1);
+    background: #7e57c2;
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    background: #7e57c2;
+    opacity: 1;
+  }
 }
 
 .grid-cell.path {
   background: #7e57c2 !important;
   box-shadow: 0 0 6px 2px #b39ddb;
+  animation: path-pop 0.25s cubic-bezier(0.4, 0.8, 0.2, 1) both;
 }
 
 .clear-btn {

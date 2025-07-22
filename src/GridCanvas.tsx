@@ -32,10 +32,12 @@ interface GridCanvasState {
   isPlaying: boolean;
   path?: Point[];
   selectedAlgorithm: 'bfs' | 'dfs';
+  revealedPathIndices?: number;
 }
 
 class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
   timer: NodeJS.Timeout | null = null;
+  pathRevealTimer: NodeJS.Timeout | null = null;
 
   constructor(props: GridCanvasProps) {
     super(props);
@@ -57,7 +59,8 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
   }
 
   handleCellMouseDown = (row: number, col: number) => {
-    const { start, end } = this.state;
+    const { start, end, runningAlgo, isPlaying } = this.state;
+    if (runningAlgo || isPlaying) return;
     if (row === start[0] && col === start[1]) {
       this.setState({ dragging: 'start' });
       return;
@@ -74,7 +77,8 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
   };
 
   handleCellMouseEnter = (row: number, col: number) => {
-    const { dragging, start, end } = this.state;
+    const { dragging, start, end, runningAlgo, isPlaying } = this.state;
+    if (runningAlgo || isPlaying) return;
     if (dragging === 'start') {
       if ((row !== end[0] || col !== end[1])) {
         this.setState({ start: [row, col] });
@@ -148,14 +152,9 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
     this.setAlgoState(algoRunner, step, true, isPlaying);
   };
 
-  handleAlgoReset = () => {
-    this.stopAutoStep();
-    this.setState({ algoRunner: undefined, visited: undefined, currentStep: undefined, found: false, runningAlgo: false, isPlaying: false, path: undefined });
-  };
-
   setAlgoState(algoRunner: AlgorithmRunner, step: AlgorithmStep | undefined, running: boolean, isPlaying?: boolean) {
     if (!step) {
-      this.setState({ runningAlgo: false, isPlaying: false, path: undefined });
+      this.setState({ runningAlgo: false, isPlaying: false, path: undefined, revealedPathIndices: undefined });
       this.stopAutoStep();
       return;
     }
@@ -171,10 +170,31 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
       runningAlgo: running && !step.found,
       isPlaying: !!isPlaying && !step.found,
       path,
+      revealedPathIndices: step.found ? 0 : undefined,
     }, () => {
-      if (step.found) this.stopAutoStep();
+      if (step.found) {
+        this.stopAutoStep();
+        this.animatePathReveal();
+      }
     });
   }
+
+  animatePathReveal = () => {
+    if (!this.state.path) return;
+    if (this.state.revealedPathIndices === undefined) return;
+    if (this.state.revealedPathIndices >= this.state.path.length) return;
+    this.pathRevealTimer = setTimeout(() => {
+      this.setState(prev => ({
+        revealedPathIndices: prev.revealedPathIndices !== undefined ? prev.revealedPathIndices + 1 : undefined
+      }), this.animatePathReveal);
+    }, 40);
+  };
+
+  handleAlgoReset = () => {
+    this.stopAutoStep();
+    if (this.pathRevealTimer) clearTimeout(this.pathRevealTimer);
+    this.setState({ algoRunner: undefined, visited: undefined, currentStep: undefined, found: false, runningAlgo: false, isPlaying: false, path: undefined, revealedPathIndices: undefined });
+  };
 
   getGrid(): Grid {
     return this.state.grid;
@@ -185,7 +205,7 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
   }
 
   render() {
-    const { grid, start, end, visited, currentStep, runningAlgo, found, isPlaying, path, selectedAlgorithm } = this.state;
+    const { grid, start, end, visited, currentStep, runningAlgo, found, isPlaying, path, selectedAlgorithm, revealedPathIndices } = this.state;
     return (
       <div onMouseUp={this.handleMouseUp}>
         <div style={{ marginBottom: 16 }}>
@@ -203,7 +223,11 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
                 if (rowIdx === start[0] && colIdx === start[1]) cellClass += ' start';
                 else if (rowIdx === end[0] && colIdx === end[1]) cellClass += ' end';
                 else if (cell === GridCellType.WALL) cellClass += ' filled';
-                else if (path && path.some(([r, c]) => r === rowIdx && c === colIdx)) cellClass += ' path';
+                // Animate path reveal
+                else if (
+                  path &&
+                  path.some((p, i) => i < (revealedPathIndices ?? 0) && p[0] === rowIdx && p[1] === colIdx)
+                ) cellClass += ' path';
                 else if (visited && visited[rowIdx][colIdx]) cellClass += ' visited';
                 if (currentStep && rowIdx === currentStep[0] && colIdx === currentStep[1]) cellClass += ' current';
                 return (
