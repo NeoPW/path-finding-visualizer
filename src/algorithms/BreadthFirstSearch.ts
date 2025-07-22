@@ -27,7 +27,6 @@ export function* breadthFirstSearchSteps(
 
   while (queue.length > 0) {
     const currentLayerSize = queue.length;
-    let found = false;
     let lastCurrent: Point = start;
     for (let i = 0; i < currentLayerSize; i++) {
       const current = queue.shift()!;
