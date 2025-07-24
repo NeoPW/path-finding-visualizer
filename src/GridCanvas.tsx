@@ -1,8 +1,10 @@
 import React from 'react';
 import './GridCanvas.css';
-import { breadthFirstSearchSteps, Point } from './algorithms/BreadthFirstSearch';
+import { breadthFirstSearchSteps } from './algorithms/BreadthFirstSearch';
 import { depthFirstSearchSteps } from './algorithms/DepthFirstSearch';
+import { greedySearchSteps } from './algorithms/GreedySearch';
 import { AlgorithmRunner, AlgorithmStep } from './algorithms/AlgorithmRunner';
+import { Point } from './algorithms/algorithmHelper';
 
 export enum GridCellType {
   EMPTY,
@@ -20,8 +22,8 @@ interface GridCanvasProps {
 interface GridCanvasState {
   grid: Grid;
   isDrawing: boolean;
-  start: [number, number];
-  end: [number, number];
+  start: Point;
+  end: Point;
   dragging: null | 'start' | 'end';
   visited?: boolean[][];
   currentStep?: Point;
@@ -30,7 +32,7 @@ interface GridCanvasState {
   algoRunner?: AlgorithmRunner;
   isPlaying: boolean;
   path?: Point[];
-  selectedAlgorithm: 'bfs' | 'dfs';
+  selectedAlgorithm: 'bfs' | 'dfs' | 'greedy';
   revealedPathIndices?: number;
 }
 
@@ -42,6 +44,7 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
   algorithmDescriptions: Record<string, string> = {
     bfs: 'Breadth First Search (BFS) explores all neighbors at the current depth before moving to the next level. It guarantees the shortest path in unweighted graphs.',
     dfs: 'Depth First Search (DFS) explores as far as possible along each branch before backtracking. It does not guarantee the shortest path but is useful for exhaustive searches.',
+    greedy: 'Greedy Search (GS) explores the node that appears to be closest to the goal, without considering the total cost. It is faster than BFS but does not guarantee the shortest path.',
   };
 
   constructor(props: GridCanvasProps) {
@@ -49,8 +52,8 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
     this.state = {
       grid: this.createEmptyGrid(),
       isDrawing: false,
-      start: [0, 0],
-      end: [props.numRows - 1, props.numCols - 1],
+      start: {x: 0, y: 0},
+      end: {x: props.numRows - 1, y: props.numCols - 1},
       dragging: null,
       runningAlgo: false,
       isPlaying: false,
@@ -76,11 +79,11 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
   handleCellMouseDown = (row: number, col: number) => {
     const { start, end, runningAlgo, isPlaying } = this.state;
     if (runningAlgo || isPlaying) return;
-    if (row === start[0] && col === start[1]) {
+    if (row === start.x && col === start.y) {
       this.setState({ dragging: 'start' });
       return;
     }
-    if (row === end[0] && col === end[1]) {
+    if (row === end.x && col === end.y) {
       this.setState({ dragging: 'end' });
       return;
     }
@@ -95,14 +98,14 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
     const { dragging, start, end, runningAlgo, isPlaying } = this.state;
     if (runningAlgo || isPlaying) return;
     if (dragging === 'start') {
-      if ((row !== end[0] || col !== end[1])) {
-        this.setState({ start: [row, col] });
+      if ((row !== end.x || col !== end.y)) {
+        this.setState({ start: {x: row, y: col} });
       }
       return;
     }
     if (dragging === 'end') {
-      if ((row !== start[0] || col !== start[1])) {
-        this.setState({ end: [row, col] });
+      if ((row !== start.x || col !== start.y)) {
+        this.setState({ end: {x: row, y: col} });
       }
       return;
     }
@@ -126,13 +129,13 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
 
   // --- Algorithm controls ---
   handleAlgorithmChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    this.setState({ selectedAlgorithm: e.target.value as 'bfs' | 'dfs' });
+    this.setState({ selectedAlgorithm: e.target.value as 'bfs' | 'dfs' | 'greedy' });
   };
 
   handleAlgoStart = () => {
     const { grid, start, end, selectedAlgorithm } = this.state;
     const algoRunner = new AlgorithmRunner(
-      selectedAlgorithm === 'bfs' ? breadthFirstSearchSteps : depthFirstSearchSteps,
+      selectedAlgorithm === 'bfs' ? breadthFirstSearchSteps : selectedAlgorithm === 'dfs' ? depthFirstSearchSteps : greedySearchSteps,
       grid,
       start,
       end
@@ -248,6 +251,7 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
               >
                 <option value="bfs">Breadth First Search</option>
                 <option value="dfs">Depth First Search</option>
+                <option value="greedy">Greedy Search</option>
               </select>
             </div>
             <div className="explanation-btn-wrapper">
@@ -255,7 +259,7 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
                 Explanation
                 <div className="explanation-tooltip">
                   <div className="algo-desc-title">
-                    {selectedAlgorithm === 'bfs' ? 'Breadth First Search' : 'Depth First Search'}
+                    {selectedAlgorithm === 'bfs' ? 'Breadth First Search' : selectedAlgorithm === 'dfs' ? 'Depth First Search' : 'Greedy Search'}
                   </div>
                   <div className="algo-desc-text">{this.algorithmDescriptions[selectedAlgorithm]}</div>
                 </div>
@@ -275,15 +279,15 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
               <div className="grid-row" key={rowIdx}>
                 {row.map((cell, colIdx) => {
                   let cellClass = 'grid-cell';
-                  if (rowIdx === start[0] && colIdx === start[1]) cellClass += ' start';
-                  else if (rowIdx === end[0] && colIdx === end[1]) cellClass += ' end';
+                  if (rowIdx === start.x && colIdx === start.y) cellClass += ' start';
+                  else if (rowIdx === end.x && colIdx === end.y) cellClass += ' end';
                   else if (cell === GridCellType.WALL) cellClass += ' filled';
                   else if (
                     path &&
-                    path.some((p, i) => i < (revealedPathIndices ?? 0) && p[0] === rowIdx && p[1] === colIdx)
+                    path.some((p, i) => i < (revealedPathIndices ?? 0) && p.x === rowIdx && p.y === colIdx)
                   ) cellClass += ' path';
                   else if (visited && visited[rowIdx][colIdx]) cellClass += ' visited';
-                  if (currentStep && rowIdx === currentStep[0] && colIdx === currentStep[1]) cellClass += ' current';
+                  if (currentStep && rowIdx === currentStep.x && colIdx === currentStep.y) cellClass += ' current';
                   return (
                     <div
                       key={colIdx}
