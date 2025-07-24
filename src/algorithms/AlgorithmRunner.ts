@@ -1,5 +1,5 @@
 import { Grid } from '../GridCanvas';
-import { Point } from './BreadthFirstSearch';
+import { Point } from './algorithmHelper';
 
 export interface AlgorithmStep {
   current: Point;
@@ -59,9 +59,9 @@ export class AlgorithmRunner {
     if (!this.lastStep || !this.lastStep.found || !this.lastParent) return undefined;
     const path: Point[] = [];
     let p: Point | null = this.endPoint;
-    while (p && this.lastParent[p[0]][p[1]]) {
+    while (p && this.lastParent[p.x][p.y]) {
       path.push(p);
-      p = this.lastParent[p[0]][p[1]];
+      p = this.lastParent[p.x][p.y];
     }
     path.push(this.startPoint);
     return path.reverse();

@@ -1,7 +1,6 @@
 import { GridCellType, Grid } from '../GridCanvas';
 import { PriorityQueue } from 'priority-queue-typescript';
-
-export type Point = [number, number];
+import { Point, isInBounds, isWall, isVisited, isEnd, getNeighbors } from './algorithmHelper';
 
 export function* greedySearchSteps(
     grid: Grid,
@@ -25,7 +24,7 @@ export function* greedySearchSteps(
     const parent: (Point | null)[][] = Array.from({ length: numRows }, () => Array(numCols).fill(null));
 
     queue.add(start);
-    visited[start[0]][start[1]] = true;
+    visited[start.x][start.y] = true;
 
     while(!queue.empty())
     {
@@ -33,60 +32,30 @@ export function* greedySearchSteps(
         if(current == null)
             return
         
-        if(current?.[0] == end[0] && current[1] == end[1])
+        if(isEnd(current.x, current.y, end))
         {
             yield { current, visited, parent, found: true }
             return;
         }
 
         yield { current, visited, parent, found: false };
-        const neighbors: Point[] = [
-            [current[0] - 1, current[1]],
-            [current[0] + 1, current[1]],
-            [current[0], current[1] - 1],
-            [current[0], current[1] + 1],
-        ];
-        for (const [nRow, nCol] of neighbors) {
+        const neighbors: Point[] = getNeighbors(current.x, current.y);
+        for (const neighbor of neighbors) {
             if (
-              nRow >= 0 && nRow < numRows &&
-              nCol >= 0 && nCol < numCols &&
-              !visited[nRow][nCol] &&
-              grid[nRow][nCol] !== GridCellType.WALL
+              isInBounds(neighbor.x, neighbor.y, numRows, numCols) &&
+              !isVisited(visited, neighbor.x, neighbor.y) &&
+              !isWall(grid, neighbor.x, neighbor.y)
             ) {
-              queue.add([nRow, nCol]);
-              visited[nRow][nCol] = true;
-              parent[nRow][nCol] = [current[0], current[1]];
+              queue.add(neighbor);
+              visited[neighbor.x][neighbor.y] = true;
+              parent[neighbor.x][neighbor.y] = {x: current.x, y: current.y};
             }
           }
     }
 
 }
 
-export function testQueueWithPointsAndGoal() {
-    const goal: Point = [5, 5];
-    const points: Point[] = [
-        [1, 1],
-        [4, 4],
-        [6, 6],
-        [2, 8],
-        [5, 5],
-        [0, 0]
-    ];
-    const queue = new PriorityQueue<Point>(
-        points.length,
-        (a: Point, b: Point) => distanceCalc(a, goal) - distanceCalc(b, goal)
-    );
-    points.forEach(pt => queue.add(pt));
-    console.log('Dequeuing points in order of increasing distance to goal', goal);
-    while (!queue.empty()) {
-        const pt = queue.poll();
-        if (pt) {
-            console.log(`Point: [${pt[0]}, ${pt[1]}], Distance: ${distanceCalc(pt, goal).toFixed(2)}`);
-        }
-    }
-}
-
 function distanceCalc(a: Point, b: Point)
 {
-    return Math.sqrt(Math.pow(Math.abs(a[0]-b[0]), 2) + Math.pow(Math.abs(a[1]-b[1]), 2));
+    return Math.sqrt(Math.pow(Math.abs(a.x-b.x), 2) + Math.pow(Math.abs(a.y-b.y), 2));
 }

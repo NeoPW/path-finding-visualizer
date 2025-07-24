@@ -2,8 +2,7 @@
 // Returns a path as an array of [row, col] or null if not found
 
 import { GridCellType, Grid } from '../GridCanvas';
-
-export type Point = [number, number];
+import { Point, isInBounds, isWall, isVisited, isEnd, getNeighbors } from './algorithmHelper';
 
 export function* breadthFirstSearchSteps(
   grid: Grid,
@@ -22,7 +21,7 @@ export function* breadthFirstSearchSteps(
   const parent: (Point | null)[][] = Array.from({ length: numRows }, () => Array(numCols).fill(null));
 
   const queue: Point[] = [start];
-  visited[start[0]][start[1]] = true;
+  visited[start.x][start.y] = true;
   let layer = 0;
 
   while (queue.length > 0) {
@@ -31,27 +30,20 @@ export function* breadthFirstSearchSteps(
     for (let i = 0; i < currentLayerSize; i++) {
       const current = queue.shift()!;
       lastCurrent = current;
-      const [row, col] = current;
-      if (row === end[0] && col === end[1]) {
+      if (isEnd(current.x, current.y, end)) {
         yield { current, visited, parent, found: true, layer };
         return;
       }
-      const neighbors: Point[] = [
-        [row - 1, col],
-        [row + 1, col],
-        [row, col - 1],
-        [row, col + 1],
-      ];
-      for (const [nRow, nCol] of neighbors) {
+      const neighbors: Point[] = getNeighbors(current.x, current.y);
+      for (const neighbor of neighbors) {
         if (
-          nRow >= 0 && nRow < numRows &&
-          nCol >= 0 && nCol < numCols &&
-          !visited[nRow][nCol] &&
-          grid[nRow][nCol] !== GridCellType.WALL
+          isInBounds(neighbor.x, neighbor.y, numRows, numCols) &&
+          !isVisited(visited, neighbor.x, neighbor.y) &&
+          !isWall(grid, neighbor.x, neighbor.y)
         ) {
-          queue.push([nRow, nCol]);
-          visited[nRow][nCol] = true;
-          parent[nRow][nCol] = [row, col];
+          queue.push(neighbor);
+          visited[neighbor.x][neighbor.y] = true;
+          parent[neighbor.x][neighbor.y] = {x: current.x, y: current.y};
         }
       }
     }
