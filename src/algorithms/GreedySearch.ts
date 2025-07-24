@@ -13,24 +13,26 @@ export function* greedySearchSteps(
     found: boolean;
   }, void, unknown> {
 
-    const queue = new PriorityQueue<Point>(
-        20 * 30,
-        (a: Point, b: Point) => distanceCalc(a, end) - distanceCalc(b, end)
-    );
+
 
     const numRows = grid.length;
     const numCols = grid[0].length;
     const visited = Array.from({ length: numRows }, () => Array(numCols).fill(false));
     const parent: (Point | null)[][] = Array.from({ length: numRows }, () => Array(numCols).fill(null));
 
+    const queue = new PriorityQueue<Point>(
+        numRows * numCols,
+        (a: Point, b: Point) => manhattanDistance(a, end) - manhattanDistance(b, end)
+    );
+
     queue.add(start);
     visited[start.x][start.y] = true;
 
-    while(!queue.empty())
+    while (!queue.empty())
     {
         const current = queue.poll();
-        if(current == null)
-            return
+        if(current === null)
+            return;
         
         if(isEnd(current.x, current.y, end))
         {
@@ -55,7 +57,12 @@ export function* greedySearchSteps(
 
 }
 
-function distanceCalc(a: Point, b: Point)
+function euclideanDistance(a: Point, b: Point)
 {
     return Math.sqrt(Math.pow(Math.abs(a.x-b.x), 2) + Math.pow(Math.abs(a.y-b.y), 2));
+}
+
+function manhattanDistance(a: Point, b: Point)
+{
+    return Math.abs(a.x-b.x) + Math.abs(a.y-b.y);
 }
