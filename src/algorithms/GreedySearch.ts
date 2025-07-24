@@ -1,6 +1,6 @@
 import { GridCellType, Grid } from '../GridCanvas';
 import { PriorityQueue } from 'priority-queue-typescript';
-import { Point, isInBounds, isWall, isVisited, isEnd, getNeighbors } from './algorithmHelper';
+import { Point, isInBounds, isWall, isVisited, isEnd, getNeighbors, manhattanDistance } from './algorithmHelper';
 
 export function* greedySearchSteps(
     grid: Grid,
@@ -55,14 +55,4 @@ export function* greedySearchSteps(
           }
     }
 
-}
-
-function euclideanDistance(a: Point, b: Point)
-{
-    return Math.sqrt(Math.pow(Math.abs(a.x-b.x), 2) + Math.pow(Math.abs(a.y-b.y), 2));
-}
-
-function manhattanDistance(a: Point, b: Point)
-{
-    return Math.abs(a.x-b.x) + Math.abs(a.y-b.y);
 }
