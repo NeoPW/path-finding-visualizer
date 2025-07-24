@@ -55,7 +55,7 @@ export function* aStarSteps(
             x: neighbor.x,
             y: neighbor.y,
             g: tentativeG,
-            f: tentativeG + manhattanDistance(neighbor, end) * 2
+            f: tentativeG + manhattanDistance(neighbor, end) * 1.5
           });
         }
       }
