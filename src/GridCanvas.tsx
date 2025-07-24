@@ -5,6 +5,7 @@ import { depthFirstSearchSteps } from './algorithms/DepthFirstSearch';
 import { greedySearchSteps } from './algorithms/GreedySearch';
 import { AlgorithmRunner, AlgorithmStep } from './algorithms/AlgorithmRunner';
 import { Point } from './algorithms/algorithmHelper';
+import { aStarSteps } from './algorithms/AStar';
 
 export enum GridCellType {
   EMPTY,
@@ -32,7 +33,7 @@ interface GridCanvasState {
   algoRunner?: AlgorithmRunner;
   isPlaying: boolean;
   path?: Point[];
-  selectedAlgorithm: 'bfs' | 'dfs' | 'greedy';
+  selectedAlgorithm: 'bfs' | 'dfs' | 'greedy' | 'astar';
   revealedPathIndices?: number;
 }
 
@@ -45,6 +46,7 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
     bfs: 'Breadth First Search (BFS) explores all neighbors at the current depth before moving to the next level. It guarantees the shortest path in unweighted graphs.',
     dfs: 'Depth First Search (DFS) explores as far as possible along each branch before backtracking. It does not guarantee the shortest path but is useful for exhaustive searches.',
     greedy: 'Greedy Search (GS) explores the node that appears to be closest to the goal, without considering the total cost. It is faster than BFS but does not guarantee the shortest path.',
+    astar: 'A* Search (A*) uses both the cost to reach a node and a heuristic estimate to the goal. It is efficient and guarantees the shortest path if the heuristic is admissible.'
   };
 
   constructor(props: GridCanvasProps) {
@@ -129,13 +131,16 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
 
   // --- Algorithm controls ---
   handleAlgorithmChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    this.setState({ selectedAlgorithm: e.target.value as 'bfs' | 'dfs' | 'greedy' });
+    this.setState({ selectedAlgorithm: e.target.value as 'bfs' | 'dfs' | 'greedy' | 'astar' });
   };
 
   handleAlgoStart = () => {
     const { grid, start, end, selectedAlgorithm } = this.state;
     const algoRunner = new AlgorithmRunner(
-      selectedAlgorithm === 'bfs' ? breadthFirstSearchSteps : selectedAlgorithm === 'dfs' ? depthFirstSearchSteps : greedySearchSteps,
+      selectedAlgorithm === 'bfs' ? breadthFirstSearchSteps
+      : selectedAlgorithm === 'dfs' ? depthFirstSearchSteps
+      : selectedAlgorithm === 'greedy' ? greedySearchSteps
+      : aStarSteps,
       grid,
       start,
       end
@@ -252,6 +257,7 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
                 <option value="bfs">Breadth First Search</option>
                 <option value="dfs">Depth First Search</option>
                 <option value="greedy">Greedy Search</option>
+                <option value="astar">A* Search</option>
               </select>
             </div>
             <div className="explanation-btn-wrapper">
@@ -259,7 +265,7 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
                 Explanation
                 <div className="explanation-tooltip">
                   <div className="algo-desc-title">
-                    {selectedAlgorithm === 'bfs' ? 'Breadth First Search' : selectedAlgorithm === 'dfs' ? 'Depth First Search' : 'Greedy Search'}
+                    {selectedAlgorithm === 'bfs' ? 'Breadth First Search' : selectedAlgorithm === 'dfs' ? 'Depth First Search' : selectedAlgorithm === 'greedy' ? 'Greedy Search' : 'A* Search'}
                   </div>
                   <div className="algo-desc-text">{this.algorithmDescriptions[selectedAlgorithm]}</div>
                 </div>
