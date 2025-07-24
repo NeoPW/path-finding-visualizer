@@ -27,12 +27,10 @@ export function isEnd(row: number, col: number, end: Point) {
     return row === end.x && col === end.y;
 }
 
-export function euclideanDistance(a: Point, b: Point)
-{
+export function euclideanDistance(a: Point, b: Point) {
     return Math.sqrt(Math.pow(Math.abs(a.x-b.x), 2) + Math.pow(Math.abs(a.y-b.y), 2));
 }
 
-export function manhattanDistance(a: Point, b: Point)
-{
+export function manhattanDistance(a: Point, b: Point) {
     return Math.abs(a.x-b.x) + Math.abs(a.y-b.y);
 }

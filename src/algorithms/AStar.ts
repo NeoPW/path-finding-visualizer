@@ -7,6 +7,8 @@ interface AStarNode extends Point {
   f: number; // g + h
 }
 
+const HEURISTIC_MULTIPLIER = 1.5;
+
 export function* aStarSteps(
   grid: Grid,
   start: Point,
@@ -55,7 +57,7 @@ export function* aStarSteps(
             x: neighbor.x,
             y: neighbor.y,
             g: tentativeG,
-            f: tentativeG + manhattanDistance(neighbor, end) * 1.5
+            f: tentativeG + manhattanDistance(neighbor, end) * HEURISTIC_MULTIPLIER
           });
         }
       }
