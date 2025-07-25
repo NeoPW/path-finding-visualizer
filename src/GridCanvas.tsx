@@ -6,6 +6,7 @@ import { greedySearchSteps } from './algorithms/GreedySearch';
 import { AlgorithmRunner, AlgorithmStep } from './algorithms/AlgorithmRunner';
 import { Point } from './algorithms/algorithmHelper';
 import { aStarSteps } from './algorithms/AStar';
+import { generateMaze, MazeType } from './algorithms/MazeGenerator';
 
 export enum GridCellType {
   EMPTY,
@@ -35,6 +36,7 @@ interface GridCanvasState {
   path?: Point[];
   selectedAlgorithm: 'bfs' | 'dfs' | 'greedy' | 'astar';
   revealedPathIndices?: number;
+  mazeType: MazeType;
 }
 
 class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
@@ -60,6 +62,7 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
       runningAlgo: false,
       isPlaying: false,
       selectedAlgorithm: 'bfs',
+      mazeType: 'random',
     };
   }
 
@@ -132,6 +135,28 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
   // --- Algorithm controls ---
   handleAlgorithmChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     this.setState({ selectedAlgorithm: e.target.value as 'bfs' | 'dfs' | 'greedy' | 'astar' });
+  };
+
+  handleMazeTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const mazeType = e.target.value as MazeType;
+    this.setState({ mazeType }, () => {
+      this.generateMazeForCurrentType();
+    });
+  };
+
+  generateMazeForCurrentType = () => {
+    const { numRows, numCols } = this.props;
+    const { start, end, mazeType } = this.state;
+    const maze = generateMaze(numRows, numCols, mazeType, start, end);
+    // Build new grid with walls from maze, but keep start/end
+    const newGrid: Grid = Array.from({ length: numRows }, (_, i) =>
+      Array.from({ length: numCols }, (_, j) => {
+        if (i === start.x && j === start.y) return GridCellType.START;
+        if (i === end.x && j === end.y) return GridCellType.END;
+        return maze[i][j] ? GridCellType.WALL : GridCellType.EMPTY;
+      })
+    );
+    this.setGrid(newGrid);
   };
 
   handleAlgoStart = () => {
@@ -273,13 +298,19 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
             </div>
           </div>
           <div className="controls-row">
-            <button className="modern-btn" onClick={this.handleAlgoStart} disabled={runningAlgo || isPlaying}>Start Search</button>
-            <button className="modern-btn" onClick={this.handleAlgoNext} disabled={!runningAlgo}>Next Step</button>
-            <button className="modern-btn" onClick={this.handlePlayPause} disabled={!runningAlgo}>{isPlaying ? 'Pause' : 'Play'}</button>
-            <button className="modern-btn" onClick={this.handleAlgoReset}>Reset Search</button>
-            <button className="clear-btn" onClick={this.handleClear}>Clear</button>
+            <label htmlFor="maze-select">Maze Type:</label>
+            <select id="maze-select" value={this.state.mazeType} onChange={this.handleMazeTypeChange} className="algo-select">
+              <option value="none">None</option>
+              <option value="random">Random Maze</option>
+              <option value="verticalLines">Vertical Lines</option>
+              <option value="horizontalLines">Horizontal Lines</option>
+              <option value="comboLines">Combo Lines</option>
+              <option value="checkerboard">Checkerboard</option>
+              <option value="diamonds">Diamonds</option>
+              <option value="caves">Caves</option>
+              <option value="dfsMaze">DFS Maze</option>
+            </select>
           </div>
-          <hr className="divider" />
           <div className="grid">
             {grid.map((row, rowIdx) => (
               <div className="grid-row" key={rowIdx}>
@@ -306,6 +337,14 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
               </div>
             ))}
           </div>
+          <div className="controls-row">
+            <button className="modern-btn" onClick={this.handleAlgoStart} disabled={runningAlgo || isPlaying}>Start Search</button>
+            <button className="modern-btn" onClick={this.handleAlgoNext} disabled={!runningAlgo}>Next Step</button>
+            <button className="modern-btn" onClick={this.handlePlayPause} disabled={!runningAlgo}>{isPlaying ? 'Pause' : 'Play'}</button>
+            <button className="modern-btn" onClick={this.handleAlgoReset}>Reset Search</button>
+            <button className="clear-btn" onClick={this.handleClear}>Clear</button>
+          </div>
+          <hr className="divider" />
           {found && <div className="path-found">Path found!</div>}
         </div>
       </div>
