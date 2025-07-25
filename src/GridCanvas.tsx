@@ -62,7 +62,7 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
       runningAlgo: false,
       isPlaying: false,
       selectedAlgorithm: 'bfs',
-      mazeType: 'random',
+      mazeType: 'none',
     };
   }
 
@@ -342,10 +342,9 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
             <button className="modern-btn" onClick={this.handleAlgoNext} disabled={!runningAlgo}>Next Step</button>
             <button className="modern-btn" onClick={this.handlePlayPause} disabled={!runningAlgo}>{isPlaying ? 'Pause' : 'Play'}</button>
             <button className="modern-btn" onClick={this.handleAlgoReset}>Reset Search</button>
-            <button className="clear-btn" onClick={this.handleClear}>Clear</button>
+            <button className="clear-btn" onClick={this.handleClear}>Clear Walls</button>
           </div>
           <hr className="divider" />
-          {found && <div className="path-found">Path found!</div>}
         </div>
       </div>
     );
