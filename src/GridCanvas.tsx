@@ -128,7 +128,7 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
     this.setState({ isDrawing: false, dragging: null });
   };
 
-  handleClear = () => {
+  handleClearWalls = () => {
     this.setState({ grid: this.createEmptyGrid() });
   };
 
@@ -342,7 +342,7 @@ class GridCanvas extends React.Component<GridCanvasProps, GridCanvasState> {
             <button className="modern-btn" onClick={this.handleAlgoNext} disabled={!runningAlgo}>Next Step</button>
             <button className="modern-btn" onClick={this.handlePlayPause} disabled={!runningAlgo}>{isPlaying ? 'Pause' : 'Play'}</button>
             <button className="modern-btn" onClick={this.handleAlgoReset}>Reset Search</button>
-            <button className="clear-btn" onClick={this.handleClear}>Clear Walls</button>
+            <button className="clear-btn" onClick={this.handleClearWalls}>Clear Walls</button>
           </div>
           <hr className="divider" />
         </div>

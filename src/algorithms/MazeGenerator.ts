@@ -10,6 +10,8 @@ export type MazeType =
   | 'caves'
   | 'dfsMaze';
 
+const RANDOM_WALL_PROBABILITY = 0.3;
+
 // --- Maze Generators ---
 function mazeNone(numRows: number, numCols: number): boolean[][] {
   return Array.from({ length: numRows }, () => Array(numCols).fill(false));
@@ -17,7 +19,7 @@ function mazeNone(numRows: number, numCols: number): boolean[][] {
 
 function mazeRandom(numRows: number, numCols: number): boolean[][] {
   return Array.from({ length: numRows }, () =>
-    Array.from({ length: numCols }, () => Math.random() < 0.3)
+    Array.from({ length: numCols }, () => Math.random() < RANDOM_WALL_PROBABILITY)
   );
 }
 
